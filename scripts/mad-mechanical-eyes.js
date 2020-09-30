@@ -13,6 +13,7 @@ Hooks.once("ready", () => {
   }, {default: 'none'});
 
   let playerData;
+  let gmRoll;
   game.settings.register(MODULE_ID, "PlayerWithMadMechanicalEyes", {
     name: 'Player with Mad Eyes',
     scope: 'world',
@@ -33,8 +34,18 @@ Hooks.once("ready", () => {
     onChange: value => playerData = getNewPlayerData(value)
   });
 
-  playerData = getNewPlayerData(game.settings.get(MODULE_ID, "PlayerWithMadMechanicalEyes"));
+  game.settings.register(MODULE_ID, "MadMechanicalEyesGmRoll", {
+    name: 'Gm Roll',
+    hint: 'Show roll as GM roll, disabling this will show no roll in chat',
+    scope: 'world',
+    config: 'true',
+    type: Boolean,
+    default: true,
+    onChange: value => gmRoll = value
+  });
 
+  playerData = getNewPlayerData(game.settings.get(MODULE_ID, "PlayerWithMadMechanicalEyes"));
+  gmRoll = game.settings.get(MODULE_ID, "MadMechanicalEyesGmRoll")
 
   Hooks.on("updateActor", (actor) => {
     if (actor.data._id === playerData.id) {
@@ -67,37 +78,26 @@ Hooks.once("ready", () => {
   }
 
   function reRollMadEyes(actor, context) {
-    // Roll with flavor text
-    let res = new Roll('1d20');
-    res.toMessage({
-      speaker: ChatMessage.getSpeaker({actor}),
-      flavor: 'Mad Mechanical Eyes Roll ( ' + context + ' )',
-      rollMode: 'gmroll'
-    });
-    console.log(game.scenes.entities.flatMap(value => value.data.tokens.filter(t => t.actorId === playerData.id).map(token => {
-      token = new Token(token);
-      token.scene = value._id;
-      return token
-    })))
-    let tokens = game.scenes.entities.flatMap(value => value.data.tokens.filter(t => t.actorId === playerData.id).map(token => {
-      token = new Token(token);
-      token.scene = value._id;
-      return token
-    }))
-    // let token = canvas.tokens.placeables.find(t => t.data.actorId === playerData.id);
-    // tokens = tokens.map(token => {
-    //   token.data = {vision: false}
-    // })
-    // scene.updateEmbeddedEntity("Token",tokens)
-    tokens.forEach(token => {
-      console.log(token)
+    let res = new Roll('1d20').roll();
+    if (gmRoll)
+      res.toMessage({
+        speaker: ChatMessage.getSpeaker({actor}),
+        flavor: 'Mad Mechanical Eyes Roll ( ' + context + ' )',
+        rollMode: 'gmroll'
+      });
+
+    game.scenes.entities.flatMap(scene => {
+      scene.data.tokens = scene.data.tokens.filter(token => token.actorId === playerData.id)
+      return scene
+    }).forEach(scene => {
+      scene.data.tokens.map(token => new Token(token, scene)).forEach(token => {
         if (res.result === "1")
           token.update({
             vision: false,
             dimSight: 1,
             brightSight: 0,
             effects: token.data.effects.includes("icons/svg/blind.svg") ? token.data.effects : ["icons/svg/blind.svg", ...token.data.effects]
-          }).then()
+          })
         else if (res.result === "20") {
           let moduleDimSight = game.settings.get(MODULE_ID, "MadMechanicalEyesDarkVision");
           token.update({
@@ -105,17 +105,17 @@ Hooks.once("ready", () => {
             dimSight: (actor.data.token.dimSight > moduleDimSight) ? actor.data.token.dimSight : moduleDimSight,
             brightSight: actor.data.token.brightSight,
             effects: token.data.effects.filter(v => v !== "icons/svg/blind.svg")
-          }).then();
+          });
         } else {
           token.update({
             vision: true,
             dimSight: actor.data.token.dimSight,
             brightSight: actor.data.token.brightSight,
             effects: token.data.effects.filter(v => v !== "icons/svg/blind.svg")
-          }).then();
+          });
         }
-      }
-    )
+      })
+    })
   }
 })
 
