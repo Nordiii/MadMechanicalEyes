@@ -43,7 +43,7 @@ Hooks.once("ready", () => {
         return;
       }
       playerData.hp = actor.data.data.attributes.hp.value;
-      reRollMadEyes(actor,"Schaden erhalten");
+      reRollMadEyes(actor, "Schaden erhalten");
     }
 
   });
@@ -71,34 +71,51 @@ Hooks.once("ready", () => {
     let res = new Roll('1d20');
     res.toMessage({
       speaker: ChatMessage.getSpeaker({actor}),
-      flavor: 'Mad Mechanical Eyes Roll ( '+ context + ' )',
+      flavor: 'Mad Mechanical Eyes Roll ( ' + context + ' )',
       rollMode: 'gmroll'
     });
-
-    let token = canvas.tokens.placeables.find(t => t.data.actorId === playerData.id);
-    if (res.result === "1")
-      token.update({
-        vision: false,
-        dimSight: 1,
-        brightSight: 0,
-        effects: token.data.effects.includes("icons/svg/blind.svg") ? token.data.effects : ["icons/svg/blind.svg", ...token.data.effects]
-      })
-    else if (res.result === "20") {
-      let moduleDimSight = game.settings.get(MODULE_ID, "MadMechanicalEyesDarkVision");
-      token.update({
-        vision: true,
-        dimSight: (actor.data.token.dimSight > moduleDimSight) ? actor.data.token.dimSight : moduleDimSight,
-        brightSight: actor.data.token.brightSight,
-        effects: token.data.effects.filter(v => v !== "icons/svg/blind.svg")
-      });
-    } else {
-      token.update({
-        vision: true,
-        dimSight: actor.data.token.dimSight,
-        brightSight: actor.data.token.brightSight,
-        effects: token.data.effects.filter(v => v !== "icons/svg/blind.svg")
-      });
-    }
+    console.log(game.scenes.entities.flatMap(value => value.data.tokens.filter(t => t.actorId === playerData.id).map(token => {
+      token = new Token(token);
+      token.scene = value._id;
+      return token
+    })))
+    let tokens = game.scenes.entities.flatMap(value => value.data.tokens.filter(t => t.actorId === playerData.id).map(token => {
+      token = new Token(token);
+      token.scene = value._id;
+      return token
+    }))
+    // let token = canvas.tokens.placeables.find(t => t.data.actorId === playerData.id);
+    // tokens = tokens.map(token => {
+    //   token.data = {vision: false}
+    // })
+    // scene.updateEmbeddedEntity("Token",tokens)
+    tokens.forEach(token => {
+      console.log(token)
+        if (res.result === "1")
+          token.update({
+            vision: false,
+            dimSight: 1,
+            brightSight: 0,
+            effects: token.data.effects.includes("icons/svg/blind.svg") ? token.data.effects : ["icons/svg/blind.svg", ...token.data.effects]
+          }).then()
+        else if (res.result === "20") {
+          let moduleDimSight = game.settings.get(MODULE_ID, "MadMechanicalEyesDarkVision");
+          token.update({
+            vision: true,
+            dimSight: (actor.data.token.dimSight > moduleDimSight) ? actor.data.token.dimSight : moduleDimSight,
+            brightSight: actor.data.token.brightSight,
+            effects: token.data.effects.filter(v => v !== "icons/svg/blind.svg")
+          }).then();
+        } else {
+          token.update({
+            vision: true,
+            dimSight: actor.data.token.dimSight,
+            brightSight: actor.data.token.brightSight,
+            effects: token.data.effects.filter(v => v !== "icons/svg/blind.svg")
+          }).then();
+        }
+      }
+    )
   }
 })
 
