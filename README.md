@@ -1,6 +1,10 @@
 # Mad Mechanical Eyes
 
 This module is just to automate the behavior of a custom magical item
+
+#### 1.0.4
+* fix error thrown in case a chat message is not a stat roll
+
 #### 1.0.3
 * fix issue with betterrolls5e in version 0.7 of foundry
 
