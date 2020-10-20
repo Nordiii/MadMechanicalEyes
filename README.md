@@ -1,6 +1,8 @@
 # Mad Mechanical Eyes
 
 This module is just to automate the behavior of a custom magical item
+#### 1.0.3
+* fix issue with betterrolls5e in version 0.7 of foundry
 
 #### 1.0.2
 * take perception roll (without the bonus) instead of re-rolling (only works with better rolls)

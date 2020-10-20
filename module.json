@@ -3,9 +3,9 @@
   "title": "Mad Mechanical Eyes",
   "description": "Those eyes will fuck you, but they look good",
   "author": "Nordiii",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "minimumCoreVersion": "0.6.6",
-  "compatibleCoreVersion": "0.6.6",
+  "compatibleCoreVersion": "0.7.4",
   "esmodules": [
     "scripts/mad-mechanical-eyes.js"
   ],

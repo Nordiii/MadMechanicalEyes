@@ -71,12 +71,11 @@ Hooks.once("ready", () => {
     })
 
     function betterRolls(message) {
-        if (message.data.content.includes("<h3 class=\"item-name\">Perception</h3>")) {
-            let parsed = new DOMParser().parseFromString(message.data.content, 'text/html')
-
+        let parsed = new DOMParser().parseFromString(message.data.content, 'text/html')
+        if (parsed.getElementsByClassName("item-name")[0].textContent.trim() === "Perception") {
             Array.from(parsed.getElementsByClassName("dice-total dice-row-item red-base-die")).forEach(value => {
                 if (!value.classList.contains("ignored")) {
-                    let diceFormula = parsed.getElementsByClassName("dice-formula dice-tooltip")[0].textContent;
+                    let diceFormula = parsed.getElementsByClassName("dice-formula dice-tooltip")[0].textContent.trim();
                     let roll;
                     let plusIndex = diceFormula.indexOf("+")
                     let minusIndex = diceFormula.indexOf("-")
